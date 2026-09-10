@@ -1,0 +1,6 @@
+[submodule "eduscout-back"]
+	path = eduscout-back
+	url = https://github.com/bguzmanm/eduscout-back.git
+[submodule "eduscout-front"]
+	path = eduscout-front
+	url = https://github.com/bguzmanm/eduscout-front.git
