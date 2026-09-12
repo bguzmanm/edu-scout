@@ -2,9 +2,14 @@ data "oci_identity_availability_domains" "ads" {
   compartment_id = local.compartment_id
 }
 
+data "oci_core_vcns" "existing" {
+  compartment_id = local.compartment_id
+  display_name   = var.vcn_display_name
+}
+
 data "oci_core_subnets" "existing" {
   compartment_id = local.compartment_id
-  display_name   = var.subnet_display_name
+  vcn_id         = data.oci_core_vcns.existing.virtual_networks[0].id
 }
 
 data "oci_core_images" "ubuntu" {
@@ -16,7 +21,8 @@ data "oci_core_images" "ubuntu" {
 
 locals {
   compartment_id  = var.compartment_ocid != "" ? var.compartment_ocid : var.tenancy_ocid
-  subnet          = data.oci_core_subnets.existing.subnets[0]
+  subnets         = data.oci_core_subnets.existing.subnets
+  subnet          = length([for s in local.subnets : s if s.display_name == var.subnet_display_name]) > 0 ? [for s in local.subnets : s if s.display_name == var.subnet_display_name][0] : [for s in local.subnets : s if s.prohibit_public_ip_on_vnic == false][0]
   ubuntu_images   = [for img in data.oci_core_images.ubuntu.images : img if length(regexall("^26\\.04", img.operating_system_version)) > 0]
   ubuntu_image_id = local.ubuntu_images[0].id
 }

@@ -50,6 +50,11 @@ variable "boot_volume_size_in_gbs" {
   default = 50
 }
 
+variable "vcn_display_name" {
+  type    = string
+  default = "vcn_eduscout"
+}
+
 variable "subnet_display_name" {
   type    = string
   default = "subnet-eduscout"
