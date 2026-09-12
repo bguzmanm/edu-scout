@@ -2,11 +2,12 @@
 
 ## Project
 
-EduScout unifica ofertas académicas de posgrado (magíster) de universidades chilenas en un
-buscador filtrable. El backend scrapea las páginas de las instituciones (Playwright/Cheerio
-vía adaptadores por fuente), consolida en PostgreSQL y expone una API; el frontend (Next.js)
-es una SPA que consume esa API. El despliegue de producción es un único VPS (Oracle Cloud
-Always Free) con Docker Compose, dominio `eduscout.cl` vía Cloudflare (DNS only).
+EduScout unifica ofertas de trabajo académico (cargos docentes y concursos académicos) de
+instituciones de educación superior chilenas en un buscador filtrable. El backend scrapea las
+páginas de las instituciones (Playwright/Cheerio vía adaptadores por fuente), consolida en
+PostgreSQL y expone una API; el frontend (Next.js) es una SPA que consume esa API. El
+despliegue de producción es un único VPS (Oracle Cloud Always Free) con Docker Compose,
+dominio `eduscout.cl` vía Cloudflare (DNS only).
 
 ## Stack
 
@@ -40,7 +41,7 @@ Frontend (`eduscout-front/`):
 
 Monorepo raíz con submódulos git independientes (pipelines y repos propios):
 
-- `eduscout-back/` — API NestJS: módulos `sources`, `offers`, `scraping`, `health` (Drizzle + `postgres`).
+- `eduscout-back/` — API NestJS: módulos `sources`, `jobs`, `scraping`, `database` (Drizzle + `postgres`).
 - `eduscout-front/` — Next.js App Router (`src/app/...`), API consumida server-side.
 - `deploy/` — infraestructura de producción: `docker-compose.prod.yml`, `nginx.conf` (80/443 →
   `frontend:3000`, `backend:3001`), `terraform/` (VM Oracle), scripts y timers systemd.

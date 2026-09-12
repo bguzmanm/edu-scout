@@ -1,8 +1,10 @@
 # EduScout
 
-Agregador de ofertas de trabajo académico para educación superior en Chile.
+Agregador de ofertas académicas de educación superior en Chile.
 
-EduScout recopila, organiza y presenta ofertas de trabajo docente desde múltiples universidades e instituciones del país, todo en una sola plataforma.
+EduScout recopila, organiza y presenta ofertas de trabajo académico (cargos docentes y
+concursos académicos) desde universidades e instituciones del país, todo en una sola
+plataforma con buscador filtrable.
 
 ## Stack
 
@@ -12,7 +14,7 @@ EduScout recopila, organiza y presenta ofertas de trabajo docente desde múltipl
 | **Frontend** | Next.js 16, React 19, Tailwind CSS v4 |
 | **Scraping** | Axios, Cheerio, Playwright |
 | **Runtime** | Bun |
-| **Infra** | Docker (PostgreSQL) |
+| **Infra** | Docker Compose en un VPS Oracle Cloud (provisionado con Terraform) |
 
 ## Estructura del repositorio
 
@@ -20,11 +22,13 @@ EduScout recopila, organiza y presenta ofertas de trabajo docente desde múltipl
 edu-scout/
 ├── eduscout-back/    → API y scraping (NestJS)
 ├── eduscout-front/   → Aplicación web (Next.js)
+├── deploy/           → Infraestructura de producción (compose, nginx, terraform, timers)
+├── docs/             → Decisiones de producción y guía de Oracle Cloud
 ├── AGENTS.md
 └── README.md
 ```
 
-Cada módulo es un [git submodule](https://git-scm.com/book/es/v2/Herramientas-de-Git-Subm%C3%B3dulos) con su propio repositorio.
+Cada módulo es un [git submodule](https://git-scm.com/book/es/v2/Herramientas-de-Git-Subm%C3%B3dulos) con su propio repositorio y pipeline.
 
 ## Setup rápido
 
@@ -40,7 +44,7 @@ cp .env.example .env
 bun run docker:up          # PostgreSQL 17
 bun run db:generate        # Generar migraciones
 bun run db:migrate         # Aplicar migraciones
-bun run db:seed            # Sembrar 8 fuentes iniciales
+bun run db:seed            # Sembrar 12 fuentes iniciales
 bun run start:dev          # → http://localhost:3001
 
 # 3. Frontend (otra terminal)
@@ -66,13 +70,18 @@ EduScout scraping automáticamente las siguientes instituciones:
 | Pontificia Universidad Católica de Chile | WordPress (HTML) | [cargosacademicos.uc.cl](https://cargosacademicos.uc.cl) |
 | Universidad de Chile | API REST | [concurso-academico.uchile.cl](https://concurso-academico.uchile.cl) |
 | Universidad Adolfo Ibañez | HTML parsing | [uai.cl](https://www.uai.cl/ingenieria-y-ciencias/academicos/concursos-academicos) |
-| Universidad Nacional Andrés Bello | Nuxt data parsing | [unab.trabajando.cl](https://unab.trabajando.cl) |
-| Inacap | Nuxt data parsing | [inacap.trabajando.cl](https://inacap.trabajando.cl) |
-| Duoc UC | Nuxt data parsing | [duoc.trabajando.cl](https://duoc.trabajando.cl) |
-| IP Santo Tomás | WordPress (HTML) | [ipsantotomas.cl](https://www.ipsantotomas.cl/trabaja-con-nosotros/academicos/) |
+| Universidad Nacional Andrés Bello | trabajando.cl | [unab.trabajando.cl](https://unab.trabajando.cl) |
+| Inacap | trabajando.cl | [inacap.trabajando.cl](https://inacap.trabajando.cl) |
+| Duoc UC | trabajando.cl | [duoc.trabajando.cl](https://duoc.trabajando.cl) |
+| IP Santo Tomás | HTML/WordPress | [ipsantotomas.cl](https://www.ipsantotomas.cl/trabaja-con-nosotros/academicos/) |
 | IP Chile | Playwright (SPA) | [laborum.cl](https://www.laborum.cl) |
+| Instituto Profesional Iplacex | API REST | [convocatoriasdocentes.iplacex.cl](https://convocatoriasdocentes.iplacex.cl/) |
+| Universidad de Concepción | trabajando.cl | [udec.trabajando.cl](https://udec.trabajando.cl/trabajo-empleo/) |
+| U. Técnica Federico Santa María | HTML | [vra.usm.cl](https://vra.usm.cl/ofertas-laborales/) |
+| Universidad de Valparaíso | HTML | [cyl.uv.cl](https://cyl.uv.cl/cargos) |
 
-El scraping se ejecuta automáticamente todos los días a las **6:00 AM**. También se puede ejecutar manualmente:
+El scraping se ejecuta automáticamente por cron según `SCRAPING_CRON_ENABLED` (en producción
+desactivado hasta validar el scraping desde el VPS). También se puede ejecutar manualmente:
 
 ```bash
 # Todas las fuentes activas
