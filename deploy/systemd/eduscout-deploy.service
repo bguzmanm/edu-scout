@@ -1,0 +1,9 @@
+[Unit]
+Description=EduScout pull-deploy
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/eduscout/deploy/scripts/deploy.sh
