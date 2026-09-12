@@ -102,6 +102,15 @@ En la consola OCI:
 > o espera unos días (Oracle repone capacidad). **No** caigas en la tentación de la
 > AMD Micro (1 GB) para producción: Postgres + Nest + Next no caben.
 
+### 4.2.b (Alternativa) Crear la instancia con Terraform
+
+Para automatizar la creación y los reintentos por "Out of host capacity" (con `deploy/terraform/retry.sh`
+que vuelve a intentar `terraform apply` cada 15 min):
+- Antes de usarlo, genera una **API key** en OCI: tu perfil → API Keys → Add API Key → descarga el PEM
+  y anota tenancy/user OCID y fingerprint.
+- Copia `terraform.tfvars.example` a `terraform.tfvars` y completa los valores.
+- Ejecuta `terraform init && terraform plan` (revisa el plan) y luego `./retry.sh`.
+
 ### 4.3 (Opcional, recomendado) IP pública reservada
 
 La IP que asigna Oracle a la instancia es **efímera**: cambia si *detienes* la VM.
