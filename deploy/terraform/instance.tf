@@ -22,6 +22,6 @@ resource "oci_core_instance" "eduscout" {
   }
 
   metadata = {
-    ssh_authorized_keys = file(var.ssh_public_key_path)
+    ssh_authorized_keys = file(pathexpand(var.ssh_public_key_path))
   }
 }
