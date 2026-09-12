@@ -15,6 +15,7 @@ data "oci_core_subnets" "existing" {
 data "oci_core_images" "ubuntu" {
   compartment_id   = local.compartment_id
   operating_system = "Canonical Ubuntu"
+  shape            = var.shape
   sort_by          = "TIMECREATED"
   sort_order       = "DESC"
 }
