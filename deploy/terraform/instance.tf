@@ -1,13 +1,9 @@
 resource "oci_core_instance" "eduscout" {
+  for_each            = { db = var.instance_db_display_name, app = var.instance_app_display_name }
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = local.compartment_id
-  display_name        = var.instance_display_name
+  display_name        = each.value
   shape               = var.shape
-
-  shape_config {
-    ocpus         = var.ocpus
-    memory_in_gbs = var.memory_in_gbs
-  }
 
   source_details {
     source_type             = "image"
@@ -17,7 +13,7 @@ resource "oci_core_instance" "eduscout" {
 
   create_vnic_details {
     assign_public_ip = "true"
-    display_name     = "eduscout-vnic"
+    display_name     = "eduscout-${each.key}-vnic"
     subnet_id        = local.subnet.id
   }
 

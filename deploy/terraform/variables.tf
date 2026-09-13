@@ -25,24 +25,19 @@ variable "compartment_ocid" {
   default = ""
 }
 
-variable "instance_display_name" {
+variable "instance_db_display_name" {
   type    = string
-  default = "eduscout-prod"
+  default = "eduscout-db"
+}
+
+variable "instance_app_display_name" {
+  type    = string
+  default = "eduscout-app"
 }
 
 variable "shape" {
   type    = string
-  default = "VM.Standard.A1.Flex"
-}
-
-variable "ocpus" {
-  type    = number
-  default = 2
-}
-
-variable "memory_in_gbs" {
-  type    = number
-  default = 12
+  default = "VM.Standard.E2.1.Micro"
 }
 
 variable "boot_volume_size_in_gbs" {
