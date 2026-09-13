@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "nestjs-drizzle-crud-generator": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "skillPath": "plugins/developer-kit-typescript/skills/nestjs-drizzle-crud-generator/SKILL.md",
+      "computedHash": "30c0494e7f7179dd0b7ac41550bb8c688574ce0ff30e785a41adae6329fb70c7"
+    }
+  }
+}
