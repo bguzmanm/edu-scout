@@ -89,7 +89,8 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
 - F1: 2× VM Micro (`eduscout-app` + `eduscout-db`) provisionadas, Docker + Compose
   en split, migraciones automáticas y seed de las 12 fuentes (endpoints `/`, `/api`, `/api/jobs` OK).
 - F2: scrape de prueba desde el VPS — **12/12 fuentes OK, 0 errores** → decisión **2a**:
-  cron nativo en Oracle activado (`SCRAPING_CRON_ENABLED=true`, 06:00 America/Santiago). La Mac queda fuera de operación.
+  cron nativo en Oracle activado (`SCRAPING_CRON_ENABLED=true`, 06:00 America/Santiago) con
+  informe diario a Telegram (token + chat id en `.env`, bot `@eduscout_bot` + comandos `/scrape`, `/status`, `/list`, `/stats`). La Mac queda fuera de operación.
 - F4: registros A en Cloudflare (DNS only) → `eduscout-app`; TLS Let's Encrypt con certbot
   (https 200 + redirect 80→443 + renovación semanal `eduscout-certbot.timer`); backups nightly
   en `eduscout-db` (`eduscout-backup.timer`, 04:00, retención 7 días).
