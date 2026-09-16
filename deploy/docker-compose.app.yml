@@ -43,6 +43,7 @@ services:
 
   certbot:
     image: certbot/certbot:latest
+    profiles: ["tools"]
     restart: "no"
     volumes:
       - certbot_www:/var/www/certbot
