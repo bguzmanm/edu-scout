@@ -75,3 +75,9 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
   (Santiago) y "out of host capacity" común → reintentar (`deploy/terraform/retry.sh`, 15 min).
 - **iptables de Ubuntu en Oracle**: las imágenes bloquean 80/443 por defecto aun con la security
   list abierta; requiere `iptables -I INPUT ... -j ACCEPT` + `netfilter-persistent save`.
+- **Backups de DB cifrados (VM db)**: nightly 04:00 UTC vía `deploy/scripts/backup-db.sh` → GPG
+  AES256. Passphrase en `/opt/eduscout/deploy/.backup-gpg-passphrase` (root 600); copia local
+  gitignored en `deploy/.backup-gpg-passphrase`. Decifrar: `gpg --batch --decrypt --pinentry-mode
+  loopback --passphrase-file <pass>` (ver `PLAN_TRABAJO.md`).
+- **Residuo pre-split en app VM**: todavía hay un `deploy-db-1` + timer `eduscout-deploy-db`
+  corriendo en `eduscout-app` (inactivo; el backend usa `10.0.0.45:5432`). Pendiente de limpiar.

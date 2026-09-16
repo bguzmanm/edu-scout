@@ -1,7 +1,8 @@
 # Plan de Trabajo — Hardening de Seguridad de EduScout
 
-> Estado a 2026-09-16. Propósito: **reporte final** de lo entregado y **punto de reanudación**
-> para futuras sesiones (leer antes de tocar nada).
+> Estado a 2026-09-16 (actualización noche). Propósito: **reporte final** de lo entregado
+> y **punto de reanudación** para futuras sesiones (leer antes de tocar nada).
+> Pasos `[x]` = verificados en vivo y commit/dispatch de hoy.
 
 ## Reglas del operador que SIEMPRE respetar (no negociables)
 
@@ -36,6 +37,7 @@
   Permissions-Policy, `server_tokens off`.
 - Throttle nginx: `limit_req` 5r/min login, 10r/min register → **verificado** (login#5/#6 → 503).
 - CSP `img-src 'self' data: https:` → **logos externos cargan** (fix del 16/09, no romper branding).
+  Config local = config desplegada (`diff` vacío); fix incluido en commit de hoy.
 
 ### 2. Backend (PR #2 merged) — imagen endurecida EN CI (success), lista para auto-pull
 - scrypt para passwords (reemplaza HMAC-SHA256 legacy), reusa `hashPassword`/`verifyPassword`.
@@ -43,23 +45,38 @@
 - Guards por rol + `@Throttle` (5/min login, 10/min register).
 - 409 genérico en registro (anti-enumeración), `trust proxy`, Swagger solo dev, CSP/logger hardening.
 - El timer (5 min) la levanta sola: NO hay que forzar nada.
+- ✅ Verificado en vivo (noche 16/09): login admin → `200` (scrypt, mismas credenciales),
+  throttle aplicativo directo → `429` en request #6, nginx `503` en paralelo.
 
 ### 3. Frontend (PR #3 merged)
 - `next@16.2.5`, `poweredByHeader:false`, fix XSS JSON-LD, CSP, headers. CI en curso/distribuyendo.
+- ✅ Verificado en vivo (noche 16/09): imagen `ghcr.io/bguzmanm/eduscout-front:latest`
+  (creada 18:02) desplegada; CSP con `img-src https:` confirmado con curl real.
 
-### 4. VM db — REDUCCIÓN de riesgo ya hecha; backup GATED
-- iptables: `5432` restringido a `10.0.0.0/16` **ya activo** (recon de solo lectura). gnupg 2.4.8 ya instalado.
-- **PENDIENTE (gated, destructivo-ligero → requiere OK):** aplicar `deploy/scripts/harden-db-iptables.sh`
-  (idempotente) + configurar backup cifrado GPG (`deploy/scripts/backup-db.sh`) en la VM db.
-  No se ha aplicado nada sobre la VM db que no sea lectura.
+### 4. VM db — ✅ HARDENING COMPLETO (aplicado y verificado)
+- iptables: `5432` restringido a `10.0.0.0/16` con reglas **explícitas** ACCEPT (internal) + DROP
+  (resto), persistidas vía `netfilter-persistent` (`/etc/iptables/rules.v4`). Aplicado con
+  `harden-db-iptables.sh` (idempotente). App VM confirmó conexión `10.0.0.45:5432` OK.
+- Backup **cifrado GPG (AES256)** desplegado: `backup-db.sh` del repo reemplazó la versión
+  plana; passphrase en `/opt/eduscout/deploy/.backup-gpg-passphrase` (root 600; copia local
+  gitignored en `deploy/.backup-gpg-passphrase`). Backup ejecutado + **descifrado de
+  verificación OK** (gpg → gunzip -t). El timer nightly 04:00 ya usa la versión cifrada.
 
 ## Pendientes / próximos pasos
 
-- [ ] **VM db (gated):** `harden-db-iptables.sh` + backup cifrado GPG + probar descifrado de verificación.
-- [ ] Tras CI backend: **verificar en vivo throttle aplicativo (429)** y login admin OK
+- [x] **VM db (gated):** `harden-db-iptables.sh` + backup cifrado GPG + probar descifrado de verificación.
+- [x] Tras CI backend: **verificar en vivo throttle aplicativo (429)** y login admin OK
       (la credencial admin funcionará igual: el algoritmo cambió, el valor no).
-- [ ] Commitear el fix pendiente de `deploy/nginx.conf` (img-src https:) si corresponde.
+- [x] Commitear el fix pendiente de `deploy/nginx.conf` (img-src https:).
 - [ ] (Opcional, decisión de usuario) ISR o `no-store` en el fetch de `src/lib/api.ts` p/ datos públicos.
+- [ ] (Opcional, decisión de usuario) Borrar los backups legacy **en claro** de
+      hoy (16/09) en `/opt/eduscout/backups` (`..._0248.sql.gz`, `..._0400.sql.gz`); el retention
+      nuevo solo barre `*.sql.gz.gpg`.
+- [ ] (Opcional, higiene) La VM app aún corre un `deploy-db-1` + timer `eduscout-deploy-db`
+      sobrantes de la topología pre-split (el backend usa la VM db; inactivos pero duplican
+      5432 en la app VM). Deshabilitar timer y detener contenedor si no se usa.
+- [ ] (Observación) Log backend: `TelegramBotService: Error en polling ... 409` (light).
+      Revisar si hay duplicado de instancia/conflicto de long-polling.
 
 ## Comandos rápidos de verificación (post-cambio)
 
