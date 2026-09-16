@@ -9,13 +9,17 @@ services:
       TZ: America/Santiago
       NODE_OPTIONS: --max-old-space-size=256
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-cambiar-por-una-password-fuerte-sin-caracteres-especiales}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD en deploy/.env}
       ADMIN_TOKEN_SECRET: ${ADMIN_TOKEN_SECRET:?Defina ADMIN_TOKEN_SECRET en deploy/.env}
       ADMIN_TOKEN_TTL_MS: ${ADMIN_TOKEN_TTL_MS:-7200000}
       CANDIDATE_TOKEN_SECRET: ${CANDIDATE_TOKEN_SECRET:?Defina CANDIDATE_TOKEN_SECRET en deploy/.env}
       CANDIDATE_TOKEN_TTL_MS: ${CANDIDATE_TOKEN_TTL_MS:-604800000}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     networks:
       - internal
 
@@ -24,6 +28,10 @@ services:
     restart: always
     depends_on:
       - backend
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     networks:
       - internal
 
@@ -40,6 +48,12 @@ services:
     depends_on:
       - frontend
       - backend
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
     networks:
       - internal
 

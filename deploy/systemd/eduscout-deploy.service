@@ -7,3 +7,15 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/opt/eduscout/deploy/scripts/deploy.sh
+
+# Hardening de systemd
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true

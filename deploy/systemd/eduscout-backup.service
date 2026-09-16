@@ -6,3 +6,15 @@ After=docker.service network-online.target
 [Service]
 Type=oneshot
 ExecStart=/opt/eduscout/deploy/scripts/backup-db.sh
+
+# Hardening de systemd (oneshot; docker CLI ya corre los pasos privilegiados)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
