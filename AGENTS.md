@@ -79,5 +79,10 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
   AES256. Passphrase en `/opt/eduscout/deploy/.backup-gpg-passphrase` (root 600); copia local
   gitignored en `deploy/.backup-gpg-passphrase`. Decifrar: `gpg --batch --decrypt --pinentry-mode
   loopback --passphrase-file <pass>` (ver `PLAN_TRABAJO.md`).
-- **Residuo pre-split en app VM**: todavía hay un `deploy-db-1` + timer `eduscout-deploy-db`
-  corriendo en `eduscout-app` (inactivo; el backend usa `10.0.0.45:5432`). Pendiente de limpiar.
+- **Residuo pre-split en app VM**: ~~todavía hay un `deploy-db-1` + timer `eduscout-deploy-db`
+  corriendo en `eduscout-app`~~ → LIMPIADO 16/09 noche (timer/service disabled, contenedor
+  removido; volumen `deploy_postgres_data` conservado, DB residual estaba vacía).
+- **Bot de Telegram local vs prod**: `eduscout-back/.env` (dev) usa el MISMO `TELEGRAM_BOT_TOKEN`
+  que prod → si corres `bun run start:dev` mientras el bot de prod hace polling, Telegram
+  responde `409 Conflict` (doble `getUpdates`) cada ~60s. Correr solo una instancia a la vez o
+  usar un token de prueba local.

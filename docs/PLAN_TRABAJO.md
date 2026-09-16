@@ -69,14 +69,20 @@
       (la credencial admin funcionará igual: el algoritmo cambió, el valor no).
 - [x] Commitear el fix pendiente de `deploy/nginx.conf` (img-src https:).
 - [ ] (Opcional, decisión de usuario) ISR o `no-store` en el fetch de `src/lib/api.ts` p/ datos públicos.
+      → HECHO ítem 16/09 noche: ISR `revalidate: 3600` en los 4 GET públicos (`perf(frontend): ...` en main).
 - [ ] (Opcional, decisión de usuario) Borrar los backups legacy **en claro** de
       hoy (16/09) en `/opt/eduscout/backups` (`..._0248.sql.gz`, `..._0400.sql.gz`); el retention
       nuevo solo barre `*.sql.gz.gpg`.
+      → HECHO 16/09 noche: borrados (queda solo `eduscout_... .sql.gz.gpg`).
 - [ ] (Opcional, higiene) La VM app aún corre un `deploy-db-1` + timer `eduscout-deploy-db`
       sobrantes de la topología pre-split (el backend usa la VM db; inactivos pero duplican
       5432 en la app VM). Deshabilitar timer y detener contenedor si no se usa.
-- [ ] (Observación) Log backend: `TelegramBotService: Error en polling ... 409` (light).
-      Revisar si hay duplicado de instancia/conflicto de long-polling.
+      → HECHO 16/09 noche: timer/servicio `systemctl disable --now` + `compose down`
+      (volumen `deploy_postgres_data` conservado; la DB residual estaba vacía).
+- [x] (Resuelto) Log backend: `TelegramBotService: Error en polling ... 409`. Causa raíz:
+      `eduscout-back/.env` (dev local) comparte el MISMO `TELEGRAM_BOT_TOKEN` que prod →
+      doble `getUpdates` → conflicto Telegram. Cero 409 en ~2 min continuos tras cerrar la
+      instancia dev. No es bug del infra.
 
 ## Comandos rápidos de verificación (post-cambio)
 
