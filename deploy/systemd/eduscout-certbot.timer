@@ -1,0 +1,9 @@
+[Unit]
+Description=Renueva los certificados TLS de EduScout semanalmente
+
+[Timer]
+OnCalendar=Sun *-*-* 03:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

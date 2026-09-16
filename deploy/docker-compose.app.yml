@@ -41,6 +41,15 @@ services:
     networks:
       - internal
 
+  certbot:
+    image: certbot/certbot:latest
+    restart: "no"
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_certs:/etc/letsencrypt
+    networks:
+      - internal
+
 networks:
   internal:
 

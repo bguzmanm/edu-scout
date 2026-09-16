@@ -1,0 +1,8 @@
+[Unit]
+Description=EduScout backup PostgreSQL (pg_dump nightly)
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/eduscout/deploy/scripts/backup-db.sh

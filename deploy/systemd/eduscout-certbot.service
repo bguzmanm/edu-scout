@@ -1,0 +1,12 @@
+[Unit]
+Description=EduScout renovación de certificados Let's Encrypt
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/eduscout/deploy/scripts/renew-cert.sh
+
+[Install]
+WantedBy=multi-user.target
