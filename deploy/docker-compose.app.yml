@@ -1,0 +1,49 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/bguzmanm/eduscout-back:latest}
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DATABASE_USER:-eduscout}:${DATABASE_PASSWORD}@10.0.0.45:5432/${DATABASE_NAME:-eduscout}
+      SCRAPING_CRON_ENABLED: ${SCRAPING_CRON_ENABLED:-false}
+      TZ: America/Santiago
+      NODE_OPTIONS: --max-old-space-size=256
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-cambiar-por-una-password-fuerte-sin-caracteres-especiales}
+      ADMIN_TOKEN_SECRET: ${ADMIN_TOKEN_SECRET:?Defina ADMIN_TOKEN_SECRET en deploy/.env}
+      ADMIN_TOKEN_TTL_MS: ${ADMIN_TOKEN_TTL_MS:-7200000}
+      CANDIDATE_TOKEN_SECRET: ${CANDIDATE_TOKEN_SECRET:?Defina CANDIDATE_TOKEN_SECRET en deploy/.env}
+      CANDIDATE_TOKEN_TTL_MS: ${CANDIDATE_TOKEN_TTL_MS:-604800000}
+    networks:
+      - internal
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/bguzmanm/eduscout-front:latest}
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - certbot_www:/var/www/certbot
+      - certbot_certs:/etc/letsencrypt
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  certbot_www:
+  certbot_certs:

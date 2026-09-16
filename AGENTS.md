@@ -6,8 +6,9 @@ EduScout unifica ofertas de trabajo académico (cargos docentes y concursos acad
 instituciones de educación superior chilenas en un buscador filtrable. El backend scrapea las
 páginas de las instituciones (Playwright/Cheerio vía adaptadores por fuente), consolida en
 PostgreSQL y expone una API; el frontend (Next.js) es una SPA que consume esa API. El
-despliegue de producción es un único VPS (Oracle Cloud Always Free) con Docker Compose,
-dominio `eduscout.cl` vía Cloudflare (DNS only).
+despliegue de producción son 2 VMs `VM.Standard.E2.1.Micro` (Oracle Cloud Always Free)
+con Docker Compose en topología split (`eduscout-db`: solo PostgreSQL;
+`eduscout-app`: backend + frontend + nginx), dominio `eduscout.cl` vía Cloudflare (DNS only).
 
 ## Stack
 
@@ -43,10 +44,11 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
 
 - `eduscout-back/` — API NestJS: módulos `sources`, `jobs`, `scraping`, `database` (Drizzle + `postgres`).
 - `eduscout-front/` — Next.js App Router (`src/app/...`), API consumida server-side.
-- `deploy/` — infraestructura de producción: `docker-compose.prod.yml`, `nginx.conf` (80/443 →
+- `deploy/` — infraestructura de producción: `docker-compose.app.yml` + `docker-compose.db.yml` (split), `nginx.conf` (80/443 →
   `frontend:3000`, `backend:3001`), `terraform/` (VM Oracle), scripts y timers systemd.
-- Producción: nginx (Let's Encrypt) → frontend Next standalone → backend NestJS → PostgreSQL 17,
-  todo dentro de una red interna de Docker; solo 80/443 y 22 (SSH) expuestos.
+- Producción: nginx (Let's Encrypt) → frontend Next standalone → backend NestJS → PostgreSQL 17.
+  PostgreSQL corre en la VM `eduscout-db` (solo `5432` alcanzable desde el CIDR de la VCN
+  `10.0.0.0/16`); backend/frontend/nginx en `eduscout-app`. Solo 80/443 y 22 (SSH) expuestos.
 
 ## Conventions
 

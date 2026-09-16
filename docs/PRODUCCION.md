@@ -11,10 +11,10 @@ Pasar la app a producción con **costo $0**, dominio propio en `.cl`, deploy aut
 
 | Tema | Decisión |
 |---|---|
-| Hosting | **Oracle Cloud Always Free**, todo en un solo VPS |
+| Hosting | **Oracle Cloud Always Free**, 2× `VM.Standard.E2.1.Micro` (AMD gratis) en split |
 | Región | **Santiago, Chile** (`sa-santiago-1`, un solo AD) |
-| Shape | ARM Ampere A1 (2 OCPU / 12 GB iniciales; tope free = 4 OCPU / 24 GB) |
-| VM | **Provisionada con Terraform** (`deploy/terraform/`) + loop de reintentos por "out of host capacity" |
+| VMs | `eduscout-db` = solo PostgreSQL; `eduscout-app` = backend + frontend + nginx |
+| VM | **Provisionadas con Terraform** (`deploy/terraform/`) + loop de reintentos por "out of host capacity" |
 | Dominio | `eduscout.cl` en **nic.cl** ($9.990 CLP/año); DNS delegado a **Cloudflare** (frida/javier) |
 | Cloudflare | Modo **DNS only** (gris); registro A cuando exista la IP del VPS |
 | TLS | Let's Encrypt (certbot) vía nginx (`deploy/nginx.conf`, puerto 80 → ACME) |
@@ -44,11 +44,14 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
      launchd 06:00 y 18:00 → scripts/scrape.ts
 ```
 
-- Provisionamiento de la VM: `deploy/terraform/` (instancia A1 sobre la VCN/subred públicas
+- Provisionamiento de las VMs: `deploy/terraform/` (2 instancias sobre la VCN/subred públicas
   existentes de OCI; `retry.sh` reintenta `terraform apply` cada 15 min hasta conseguir capacidad).
-- Shell del VPS: instalar **Docker + Compose**, copiar `deploy/`, crear `deploy/.env`,
-  montar timer systemd de deploy y levantar el stack.
-- El puerto **5432 nunca se expone al mundo**. Solo red interna de Docker + (si 2b) túnel Tailscale/SSH.
+- Shell de cada VPS: **Docker + Compose**, copiar `deploy/`, crear `deploy/.env` según la VM
+  (`eduscout-db`: solo `DATABASE_*`; `eduscout-app`: completo), montar el timer systemd correspondiente
+  (`eduscout-deploy.timer` en app / `eduscout-deploy-db.timer` en db) y levantar el stack
+  (`deploy/docker-compose.app.yml` / `deploy/docker-compose.db.yml`).
+- El puerto **5432 no se expone al mundo**: la Security List solo permite ingress desde `10.0.0.0/16`
+  (intra-VCN) y el iptables interno de la VM db lo restringe al mismo CIDR. Solo 80/443 y 22 (SSH) públicos.
 
 ## 4. Scraping (decisión crítica)
 
@@ -77,15 +80,17 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
 - Guard `SCRAPING_CRON_ENABLED` en `ScrapingScheduler` (ConfigService; default `true`).
 - Dockerfiles multi-stage (`oven/bun` back, `oven/bun`→`node:22-alpine` front) con `output: standalone`.
 - Workflows CI/CD por repo (push a main → GHCR amd64+arm64).
-- `deploy/`: `docker-compose.prod.yml`, `nginx.conf` (80/ACME), `scripts/deploy.sh`,
-  `systemd/eduscout-deploy.{service,timer}`, `.env.example`.
-- `deploy/terraform/`: instancia A1 + retry loop (`retry.sh`).
+- `deploy/`: `docker-compose.app.yml` + `docker-compose.db.yml` (split app/db), `nginx.conf`
+  (80/ACME), `scripts/deploy.sh` (`app|db`), `systemd/eduscout-deploy.{service,timer}` y
+  `systemd/eduscout-deploy-db.{service,timer}`, `.env.example`.
+- `deploy/terraform/`: 2× `VM.Standard.E2.1.Micro` + retry loop (`retry.sh`).
 - `docs/ORACLE_GUIA.md`: guía de cuenta Oracle + VM.
 - F0: `eduscout.cl` registrado en nic.cl y zona activa en Cloudflare (NS delegados).
+- F1: 2× VM Micro (`eduscout-app` + `eduscout-db`) provisionadas, Docker + Compose
+  en split, migraciones automáticas y seed de las 12 fuentes (endpoints `/`, `/api`, `/api/jobs` OK).
 - Lint/typecheck: scripts `bun run typecheck` en ambos repos; ESLint 9 flat config.
 
 **Pendiente**
-- F1: crear la VM (el loop de Terraform sigue reintentando por capacidad en AD-1).
 - F2: scrape de prueba desde el VPS → decisión 2a/2b.
 - F4: backups nightly, UptimeRobot, registros A en Cloudflare + certbot + bloque 443 en nginx.
 - F5: corte de ngrok/local y verificación final.
@@ -100,8 +105,8 @@ reintentar (Terraform `retry.sh`) o bajar el tamaño pedido (p. ej. 1 OCPU / 6 G
 ## 8. Roadmap de implementación
 
 1. **F0** Verificar disponibilidad e inscribir `eduscout.cl` (nic.cl). ✅
-2. **F1** Cuenta Oracle → VM ARM Santiago (Terraform + retry) → Docker + Compose →
-   migraciones + seed. *(en curso)*
+2. **F1** Cuenta Oracle → 2× VM Micro Santiago (Terraform + retry) → Docker + Compose →
+   migraciones + seed. ✅
 3. **F2** Scrape de prueba desde el VPS (12 fuentes) → **decisión 2a/2b**.
 4. **F3** CI/CD: Dockerfiles, workflows push → GHCR, timer systemd, migrations en entrypoint. ✅
 5. **F4** Backups nightly + monitor UptimeRobot + TLS/DNS apuntando (certbot).
