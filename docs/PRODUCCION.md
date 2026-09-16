@@ -96,8 +96,7 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
 - Lint/typecheck: scripts `bun run typecheck` en ambos repos; ESLint 9 flat config.
 
 **Pendiente**
-- F4: monitoreo UptimeRobot (faltan los checks).
-- F5: corte de ngrok/local y verificación final.
+- F4: monitoreo UptimeRobot (faltan los checks). *— el usuario los creó en su cuenta.*
 - *(Solo si 2b)* `scripts/scrape.ts` con `createApplicationContext` + LaunchAgent de macOS — ya no aplica (2a).
 
 ## 7. Límites gratuitos Oracle (cuidado)
@@ -113,8 +112,8 @@ reintentar (Terraform `retry.sh`) o bajar el tamaño pedido (p. ej. 1 OCPU / 6 G
    migraciones + seed. ✅
 3. **F2** Scrape de prueba desde el VPS (12 fuentes) → **decisión 2a**. ✅
 4. **F3** CI/CD: Dockerfiles, workflows push → GHCR, timer systemd, migrations en entrypoint. ✅
-5. **F4** Backups nightly (✅) + monitor UptimeRobot (⏳) + TLS/DNS apuntando (✅).
-6. **F5** Corte: apagar ngrok/local, verificación final (buscador, conteos, Swagger).
+5. **F4** Backups nightly ✅ + monitor UptimeRobot ✅ + TLS/DNS apuntando ✅.
+6. **F5** Corte de ngrok/local ✅, IP pública reservada (`144.22.42.169`) ✅, verificación final ✅.
 
 ## 9. Riesgos y mitigaciones
 
@@ -124,5 +123,5 @@ reintentar (Terraform `retry.sh`) o bajar el tamaño pedido (p. ej. 1 OCPU / 6 G
 
 ## 10. Decisiones pendientes
 
-- **F5**: eliminar los registros `*.vercel.app`/ngrok locales cuando se corten. *(UptimeRobot checks = / F4)*
-- **IP reservada**: reservar la IP pública de `eduscout-app` en OCI (hoy efímera: cambia si se detiene la VM).
+- **F5**: eliminar los registros `*.vercel.app`/ngrok locales cuando se corten. *— el usuario confirmó que ya no están en uso.*
+- **IP reservada**: lista (`144.22.42.169`, reservada en OCI; sobrevive paradas de la VM). ⚠️ actualizala si se recrea la VM.
