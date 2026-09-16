@@ -55,11 +55,11 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
 
 ## 4. Scraping (decisión crítica)
 
-- La IP del VPS de Santiago es geográficamente chilena → resuelve bloqueos por país.
-- **Riesgo abierto**: reputación de IP de datacenter (AS31898 Oracle) ante Cloudflare/WAF; algunas bases geoIP podrían mapear el bloque a EE. UU.
-- **Método de decisión (fase 2)**: scrape manual de prueba desde el VPS midiendo las 12 fuentes.
-  - **2a** pasar todas (o casi todas) → cron nativo en Oracle (`SCRAPING_CRON_ENABLED=true`), la Mac queda fuera de operación. ✅
-  - **2b** fallar alguna → esa fuente se scrapea desde la Mac (IP residencial) con túnel; cron desactivado para ella en Oracle.
+- La IP del VPS de Santiago es geográficamente chilena → resuelve bloqueos por país. ✅
+- **Riesgo verificado (F2, 2026-09-16)**: con la IP del datacenter (AS31898 Oracle) el scrape
+  pasó **12/12 fuentes, 0 errores** (191 ofertas activas). No hubo bloqueo por Cloudflare/WAF ni geoIP.
+- **Decisión (fase 2)**: **2a** — cron nativo en Oracle (`SCRAPING_CRON_ENABLED=true`, 06:00
+  America/Santiago); la Mac queda fuera de operación.
 
 ## 5. Deploy automatizado (CI/CD)
 
@@ -88,13 +88,17 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
 - F0: `eduscout.cl` registrado en nic.cl y zona activa en Cloudflare (NS delegados).
 - F1: 2× VM Micro (`eduscout-app` + `eduscout-db`) provisionadas, Docker + Compose
   en split, migraciones automáticas y seed de las 12 fuentes (endpoints `/`, `/api`, `/api/jobs` OK).
+- F2: scrape de prueba desde el VPS — **12/12 fuentes OK, 0 errores** → decisión **2a**:
+  cron nativo en Oracle activado (`SCRAPING_CRON_ENABLED=true`, 06:00 America/Santiago). La Mac queda fuera de operación.
+- F4: registros A en Cloudflare (DNS only) → `eduscout-app`; TLS Let's Encrypt con certbot
+  (https 200 + redirect 80→443 + renovación semanal `eduscout-certbot.timer`); backups nightly
+  en `eduscout-db` (`eduscout-backup.timer`, 04:00, retención 7 días).
 - Lint/typecheck: scripts `bun run typecheck` en ambos repos; ESLint 9 flat config.
 
 **Pendiente**
-- F2: scrape de prueba desde el VPS → decisión 2a/2b.
-- F4: backups nightly, UptimeRobot, registros A en Cloudflare + certbot + bloque 443 en nginx.
+- F4: monitoreo UptimeRobot (faltan los checks).
 - F5: corte de ngrok/local y verificación final.
-- *(Solo 2b)* `scripts/scrape.ts` con `createApplicationContext` + LaunchAgent de macOS.
+- *(Solo si 2b)* `scripts/scrape.ts` con `createApplicationContext` + LaunchAgent de macOS — ya no aplica (2a).
 
 ## 7. Límites gratuitos Oracle (cuidado)
 
@@ -107,19 +111,18 @@ reintentar (Terraform `retry.sh`) o bajar el tamaño pedido (p. ej. 1 OCPU / 6 G
 1. **F0** Verificar disponibilidad e inscribir `eduscout.cl` (nic.cl). ✅
 2. **F1** Cuenta Oracle → 2× VM Micro Santiago (Terraform + retry) → Docker + Compose →
    migraciones + seed. ✅
-3. **F2** Scrape de prueba desde el VPS (12 fuentes) → **decisión 2a/2b**.
+3. **F2** Scrape de prueba desde el VPS (12 fuentes) → **decisión 2a**. ✅
 4. **F3** CI/CD: Dockerfiles, workflows push → GHCR, timer systemd, migrations en entrypoint. ✅
-5. **F4** Backups nightly + monitor UptimeRobot + TLS/DNS apuntando (certbot).
+5. **F4** Backups nightly (✅) + monitor UptimeRobot (⏳) + TLS/DNS apuntando (✅).
 6. **F5** Corte: apagar ngrok/local, verificación final (buscador, conteos, Swagger).
 
 ## 9. Riesgos y mitigaciones
 
-- **Punto único de falla** (1 VM) → backups + monitor + doc de recuperación.
-- **IP de datacenter bloqueada** → la Fase 2 decide; fallback Mac (2b).
-- **La Mac apagada** → solo aplica en 2b; mitigado con 2 corridas al día.
+- **Punto único de falla** (2 VMs Micro) → backups (✅ en db) + monitor UptimeRobot (⏳) + doc de recuperación.
+- **IP de datacenter bloqueada** → verificado en F2: **no bloquea** (2a). Fallback Mac (2b) descartado.
+- **La Mac apagada** → no aplica (2a: scraping solo en Oracle).
 
 ## 10. Decisiones pendientes
 
-- Túnel fallback 2b: Tailscale (preferido) o SSH.
-- Destino de backups (F4): volumen de la VM vs OCI Object Storage.
-- A registros de Cloudflare (A `eduscout.cl` + `www`) cuando exista la IP del VPS.
+- **F5**: eliminar los registros `*.vercel.app`/ngrok locales cuando se corten. *(UptimeRobot checks = / F4)*
+- **IP reservada**: reservar la IP pública de `eduscout-app` en OCI (hoy efímera: cambia si se detiene la VM).

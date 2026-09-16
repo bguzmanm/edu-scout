@@ -4,7 +4,7 @@
 
 EduScout unifica ofertas de trabajo académico (cargos docentes y concursos académicos) de
 instituciones de educación superior chilenas en un buscador filtrable. El backend scrapea las
-páginas de las instituciones (Playwright/Cheerio vía adaptadores por fuente), consolida en
+páginas de las instituciones (axios/Cheerio vía adaptadores por fuente), consolida en
 PostgreSQL y expone una API; el frontend (Next.js) es una SPA que consume esa API. El
 despliegue de producción son 2 VMs `VM.Standard.E2.1.Micro` (Oracle Cloud Always Free)
 con Docker Compose en topología split (`eduscout-db`: solo PostgreSQL;
@@ -64,8 +64,9 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
 
 ## Gotchas
 
-- **Cron de scraping off en prod**: `SCRAPING_CRON_ENABLED=false` en `deploy/.env` hasta validar
-  el scraping desde el VPS (fase 2a); la imagen se construye vía CI en cada push a `main`.
+- **Cron de scraping en prod**: `SCRAPING_CRON_ENABLED=true` en `deploy/.env` (F2 validado:
+  12/12 fuentes OK desde el VPS, decisión 2a, corrida diaria 06:00 America/Santiago).
+  La imagen se construye vía CI en cada push a `main`.
 - **`NEXT_PUBLIC_API_URL`**: horneada en el build del Dockerfile (`http://backend:3001`, red interna).
 - **Arranque prod backend**: `bun dist/src/main.js` (el bundle queda en `dist/src/`, no `dist/`).
 - **GHCR**: los paquetes (`eduscout-back`, `eduscout-front`) son públicos; el pull anónimo requiere

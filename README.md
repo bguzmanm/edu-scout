@@ -12,7 +12,7 @@ plataforma con buscador filtrable.
 |------|-----------|
 | **Backend** | NestJS 11, Drizzle ORM, PostgreSQL 17 |
 | **Frontend** | Next.js 16, React 19, Tailwind CSS v4 |
-| **Scraping** | Axios, Cheerio, Playwright |
+| **Scraping** | Axios, Cheerio |
 | **Runtime** | Bun |
 | **Infra** | Docker Compose en un VPS Oracle Cloud (provisionado con Terraform) |
 
@@ -74,14 +74,14 @@ EduScout scraping automáticamente las siguientes instituciones:
 | Inacap | trabajando.cl | [inacap.trabajando.cl](https://inacap.trabajando.cl) |
 | Duoc UC | trabajando.cl | [duoc.trabajando.cl](https://duoc.trabajando.cl) |
 | IP Santo Tomás | HTML/WordPress | [ipsantotomas.cl](https://www.ipsantotomas.cl/trabaja-con-nosotros/academicos/) |
-| IP Chile | Playwright (SPA) | [laborum.cl](https://www.laborum.cl) |
+| IP Chile | API REST | [laborum.cl](https://www.laborum.cl) |
 | Instituto Profesional Iplacex | API REST | [convocatoriasdocentes.iplacex.cl](https://convocatoriasdocentes.iplacex.cl/) |
 | Universidad de Concepción | trabajando.cl | [udec.trabajando.cl](https://udec.trabajando.cl/trabajo-empleo/) |
 | U. Técnica Federico Santa María | HTML | [vra.usm.cl](https://vra.usm.cl/ofertas-laborales/) |
 | Universidad de Valparaíso | HTML | [cyl.uv.cl](https://cyl.uv.cl/cargos) |
 
 El scraping se ejecuta automáticamente por cron según `SCRAPING_CRON_ENABLED` (en producción
-desactivado hasta validar el scraping desde el VPS). También se puede ejecutar manualmente:
+activo, 06:00 — F2 validado 12/12 fuentes desde el VPS Oracle). También se puede ejecutar manualmente:
 
 ```bash
 # Todas las fuentes activas
