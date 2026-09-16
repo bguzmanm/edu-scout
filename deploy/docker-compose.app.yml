@@ -53,6 +53,13 @@ services:
     cap_drop:
       - ALL
     cap_add:
+      # Set mínimo que nginx necesita para: preparar cache/temp (CHOWN/FOWNER),
+      # spawnear workers como uid uid 101 (SETGID/SETUID) y ligar 80/443
+      # (NET_BIND_SERVICE). Se descartan el resto de capabilities.
+      - CHOWN
+      - FOWNER
+      - SETGID
+      - SETUID
       - NET_BIND_SERVICE
     networks:
       - internal
