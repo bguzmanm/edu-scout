@@ -64,6 +64,10 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
 
 ## Gotchas
 
+- **Migraciones custom (drizzle-kit)**: para migraciones de SOLO SQL (cambios de datos, no de
+  schema) usar `bunx drizzle-kit generate --custom --name <slug>` y rellenar el `.sql`. OJO:
+  drizzle-kit solo aplica entradas del journal con `when` mayor al último aplicado en la DB — si
+  interpolas/cambias timestamps (`when`) de migraciones previas, actualízalos para mantener el orden.
 - **Cron de scraping en prod**: `SCRAPING_CRON_ENABLED=true` en `deploy/.env` (F2 validado:
   12/12 fuentes OK desde el VPS, decisión 2a, corrida diaria 06:00 America/Santiago).
   La imagen se construye vía CI en cada push a `main`.
