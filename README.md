@@ -44,7 +44,7 @@ cp .env.example .env
 bun run docker:up          # PostgreSQL 17
 bun run db:generate        # Generar migraciones
 bun run db:migrate         # Aplicar migraciones
-bun run db:seed            # Sembrar 13 fuentes iniciales
+bun run db:seed            # Sembrar 14 fuentes iniciales
 bun run start:dev          # → http://localhost:3001
 
 # 3. Frontend (otra terminal)
