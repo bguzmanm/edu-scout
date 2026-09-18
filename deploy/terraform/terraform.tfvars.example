@@ -9,3 +9,8 @@ subnet_display_name = "subnet-eduscout"
 
 ocpus         = 2
 memory_in_gbs = 12
+
+# Email Delivery (OCI) — credenciales SMTP para el backend
+email_domain_name    = "eduscout.cl"
+email_sender_address = "no-reply@eduscout.cl"
+# smtp_user_ocid      = "ocid1.user.oc1..xxxx" # vacío = usa var.user_ocid; límite 2 creds por usuario

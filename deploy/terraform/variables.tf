@@ -59,3 +59,18 @@ variable "ssh_public_key_path" {
   type    = string
   default = "~/.ssh/oracle_eduscout.pub"
 }
+
+variable "email_domain_name" {
+  type    = string
+  default = "eduscout.cl"
+}
+
+variable "email_sender_address" {
+  type    = string
+  default = "no-reply@eduscout.cl"
+}
+
+variable "smtp_user_ocid" {
+  type    = string
+  default = ""
+}
