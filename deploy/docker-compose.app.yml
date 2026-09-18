@@ -23,6 +23,9 @@ services:
       SMTP_PASS: ${SMTP_PASS:-}
       SMTP_FROM: ${SMTP_FROM:-EduScout <no-reply@eduscout.cl>}
       FRONTEND_URL: ${FRONTEND_URL:-https://eduscout.cl}
+      ALERTS_NOTIFY_ENABLED: ${ALERTS_NOTIFY_ENABLED:-true}
+      ALERTS_NOTIFY_MAX_PER_RUN: ${ALERTS_NOTIFY_MAX_PER_RUN:-500}
+      ALERTS_NOTIFY_DELAY_MS: ${ALERTS_NOTIFY_DELAY_MS:-0}
     security_opt:
       - no-new-privileges:true
     cap_drop:
