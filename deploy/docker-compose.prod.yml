@@ -37,6 +37,13 @@ services:
       ADMIN_TOKEN_TTL_MS: ${ADMIN_TOKEN_TTL_MS:-7200000}
       CANDIDATE_TOKEN_SECRET: ${CANDIDATE_TOKEN_SECRET:?Defina CANDIDATE_TOKEN_SECRET en deploy/.env}
       CANDIDATE_TOKEN_TTL_MS: ${CANDIDATE_TOKEN_TTL_MS:-604800000}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-EduScout <no-reply@eduscout.cl>}
+      FRONTEND_URL: ${FRONTEND_URL:-https://eduscout.cl}
     networks:
       - internal
 

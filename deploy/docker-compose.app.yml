@@ -16,6 +16,13 @@ services:
       CANDIDATE_TOKEN_TTL_MS: ${CANDIDATE_TOKEN_TTL_MS:-604800000}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-EduScout <no-reply@eduscout.cl>}
+      FRONTEND_URL: ${FRONTEND_URL:-https://eduscout.cl}
     security_opt:
       - no-new-privileges:true
     cap_drop:
