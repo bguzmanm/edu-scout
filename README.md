@@ -44,7 +44,7 @@ cp .env.example .env
 bun run docker:up          # PostgreSQL 17
 bun run db:generate        # Generar migraciones
 bun run db:migrate         # Aplicar migraciones
-bun run db:seed            # Sembrar 14 fuentes iniciales
+bun run db:seed            # Sembrar 17 fuentes iniciales
 bun run start:dev          # → http://localhost:3001
 
 # 3. Frontend (otra terminal)
@@ -76,9 +76,14 @@ EduScout scraping automáticamente las siguientes instituciones:
 | IP Santo Tomás | HTML/WordPress | [ipsantotomas.cl](https://www.ipsantotomas.cl/trabaja-con-nosotros/academicos/) |
 | IP Chile | API REST | [laborum.cl](https://www.laborum.cl) |
 | Instituto Profesional Iplacex | API REST | [convocatoriasdocentes.iplacex.cl](https://convocatoriasdocentes.iplacex.cl/) |
+| Universidad de Las Américas | trabajando.cl | [udla.trabajando.cl](https://udla.trabajando.cl) |
+| UNIACC | hiringroom | [uniacc.hiringroom.com](https://uniacc.hiringroom.com/jobs) |
 | Universidad de Concepción | trabajando.cl | [udec.trabajando.cl](https://udec.trabajando.cl/trabajo-empleo/) |
 | U. Técnica Federico Santa María | HTML | [vra.usm.cl](https://vra.usm.cl/ofertas-laborales/) |
 | Universidad de Valparaíso | HTML | [cyl.uv.cl](https://cyl.uv.cl/cargos) |
+| Universidad Católica Silva Henríquez | Laborum | [laborum.cl](https://www.laborum.cl) |
+| AIEP | Laborum | [laborum.cl](https://www.laborum.cl) |
+| IACC | Laborum | [laborum.cl](https://www.laborum.cl) |
 
 El scraping se ejecuta automáticamente por cron según `SCRAPING_CRON_ENABLED` (en producción
 activo, 06:00 — F2 validado 12/12 fuentes desde el VPS Oracle). También se puede ejecutar manualmente:
