@@ -121,12 +121,22 @@ cd "$DEPLOY_DIR"
 docker compose -f "$COMPOSE" pull
 docker compose -f "$COMPOSE" up -d
 
-# nginx lee su configuración del archivo montado: un cambio en nginx.conf no
-# recrea el contenedor por sí solo, así que hay que recargarlo. nginx valida
-# antes de aplicar; si la config es inválida mantiene la anterior y el servicio
-# falla, dejando el error en el journal.
+# nginx lee su configuración de un bind mount de ARCHIVO: cuando git actualiza
+# nginx.conf crea un inode nuevo y el contenedor sigue viendo el viejo (un reload
+# no basta). Por eso se compara el contenido y, si difiere, se recrea nginx.
+# Después se recarga: nginx valida antes de aplicar y, si la config es inválida,
+# mantiene la anterior y deja el error en el journal.
 if [ "$TARGET" = "app" ] &&
   docker compose -f "$COMPOSE" ps --services --status running | grep -qx nginx; then
+  host_sum="$(sha256sum "$DEPLOY_DIR/nginx.conf" | cut -d' ' -f1)"
+
+  if ! ctr_sum="$(docker compose -f "$COMPOSE" exec -T nginx \
+      sha256sum /etc/nginx/nginx.conf 2>/dev/null | cut -d' ' -f1)" ||
+    [ "$ctr_sum" != "$host_sum" ]; then
+    echo "nginx.conf cambió: se recrea el contenedor nginx"
+    docker compose -f "$COMPOSE" up -d --force-recreate --no-deps nginx
+  fi
+
   docker compose -f "$COMPOSE" exec -T nginx nginx -s reload
   echo "nginx recargado con la configuración del repositorio"
 fi

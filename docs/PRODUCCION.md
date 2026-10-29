@@ -73,9 +73,11 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
     `reset --hard`): los dos VMs son checkouts del repo público desde 29/10/2026, así que
     `nginx.conf`, los compose y los scripts llegan solos. `.env`, `.backup-gpg-passphrase` y
     `terraform.tfstate` son no versionados y no se tocan.
-  - Después del `up -d`, `deploy.sh` recarga nginx (`nginx -s reload`): el archivo montado cambia
-    sin que Docker recree el contenedor. Si la config es inválida, nginx mantiene la anterior y
-    el service queda en `failed` (visible en `journalctl -u eduscout-deploy`).
+  - Después del `up -d`, `deploy.sh` compara el `nginx.conf` del repo con el que ve el
+    contenedor y recarga nginx. Si difieren, primero **recrea** el contenedor: el archivo se
+    monta uno a uno, y como git reemplaza el inode al actualizarlo, el contenedor seguiría
+    leyendo el viejo (un `reload` no lo arregla). Si la config es inválida, nginx mantiene la
+    anterior y el service queda en `failed` (visible en `journalctl -u eduscout-deploy`).
   - Los secrets se siguen escribiendo a mano en cada VM (`.env`), nunca por git.
 - **Migrations**: el entrypoint del contenedor backend ejecuta `db:migrate` (idempotente) antes de `start:prod`.
 - **Rollback**: apuntar `.env` del VPS a un tag anterior → `docker compose up -d`.
