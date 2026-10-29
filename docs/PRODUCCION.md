@@ -95,6 +95,9 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
   (https 200 + redirect 80→443 + renovación semanal `eduscout-certbot.timer`); backups nightly
   en `eduscout-db` (`eduscout-backup.timer`, 04:00, retención 7 días).
 - Lint/typecheck: scripts `bun run typecheck` en ambos repos; ESLint 9 flat config.
+- Medición de audiencia (ver §11): access log de nginx persistido en `deploy/logs/nginx/` +
+  `deploy/scripts/log-report.sh` (goaccess en Docker); atribución de registros por canal
+  (`candidates.acquisition_*`, migración `0018`) visible en el panel admin.
 
 **Pendiente**
 - F4: monitoreo UptimeRobot (faltan los checks). *— el usuario los creó en su cuenta.*
@@ -126,3 +129,33 @@ reintentar (Terraform `retry.sh`) o bajar el tamaño pedido (p. ej. 1 OCPU / 6 G
 
 - **F5**: eliminar los registros `*.vercel.app`/ngrok locales cuando se corten. *— el usuario confirmó que ya no están en uso.*
 - **IP reservada**: lista (`144.22.42.169`, reservada en OCI; sobrevive paradas de la VM). ⚠️ actualizala si se recrea la VM.
+
+## 11. Medición de audiencia
+
+No hay analítica de terceros (ni GA, ni Plausible). La medición es propia y en dos capas:
+
+**a) Tráfico (logs de nginx).** El `server` 443 escribe `access_log /var/log/eduscout/access.log`
+en formato `COMBINED`, persistido en `deploy/logs/nginx/` por el bind mount del compose. El
+contenedor corre con `TZ=America/Santiago`, así que las horas del log son locales.
+
+```bash
+cd /opt/eduscout/deploy
+./scripts/log-report.sh            # dashboard goaccess en la terminal
+./scripts/log-report.sh --html     # reporte HTML en logs/reportes/
+./scripts/log-report.sh --rotate   # archiva access.log y hace nginx -s reopen
+```
+
+goaccess corre en un contenedor efímero (`allinurl/goaccess`), sin instalar nada en la VM. Usa
+`--ignore-crawlers`, que excluye el tráfico de Googlebot y compañía: las visitas del reporte son
+personas, no indexación. **Aplicar el cambio requiere recrear nginx** (`up -d nginx`); hasta
+entonces `/var/log/eduscout` no existe y el script avisa con esa instrucción.
+
+**b) Conversión (base de datos).** `candidates.acquisition_source/medium/campaign/referrer`
+guarda el canal capturado en el navegador al momento del registro (`utm_*` o dominio de
+referencia, con ventana de 30 días y último toque con UTM). Se ve en el panel admin, pestaña
+**Postulantes → Registros por canal**. Los registros anteriores al 28/10/2026 aparecen como
+`sin dato`.
+
+Lo que los logs no pueden decir (y Search Console sí): qué consultas traen visitas, en qué
+posición y con qué CTR. Verificar `eduscout.cl` en Google Search Console es el siguiente paso
+manual, y no requiere cambios de código.

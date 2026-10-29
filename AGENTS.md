@@ -90,3 +90,9 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
   que prod → si corres `bun run start:dev` mientras el bot de prod hace polling, Telegram
   responde `409 Conflict` (doble `getUpdates`) cada ~60s. Correr solo una instancia a la vez o
   usar un token de prueba local.
+- **Medición de audiencia (sin analítica de terceros)**: nginx escribe el access log en
+  `deploy/logs/nginx/` (bind mount en `docker-compose.app.yml`); los reportes se generan con
+  `deploy/scripts/log-report.sh` (goaccess en Docker, `--ignore-crawlers`). La atribución de
+  registros vive en `candidates.acquisition_*` (migración `0018`) y se captura en el navegador
+  (`eduscout-front/src/lib/attribution.ts`, ventana de 30 días). El CSP de nginx solo permite
+  `script-src 'self'`, así que GA/Plausible cloud no funcionarían sin editarlo.
