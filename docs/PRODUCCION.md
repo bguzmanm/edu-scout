@@ -160,6 +160,22 @@ corre como root pero con `cap_drop: ALL` (sin `CAP_DAC_OVERRIDE`), así que solo
 directorio cuyo dueño sea root, y el grupo con escritura permite rotar sin `sudo`. `deploy.sh`
 deja esos permisos en cada corrida; `logs/reportes` queda para el dueño del repo.
 
+**Verlo desde el navegador (incluido el celular).** `https://eduscout.cl/reportes/` sirve el
+`ultimo.html` con Basic Auth; nginx lo monta desde `logs/reportes` (ro). El timer
+`eduscout-log-report.timer` regenera el reporte a diario a las 07:30 de Chile y rota el log el
+día 1 de cada mes. Credenciales en `deploy/logs/.htpasswd` (no versionado, `644` porque el worker
+de nginx corre como uid 101). Para cambiarlas, en la VM:
+
+```bash
+docker run --rm httpd:alpine htpasswd -nbB eduscout 'nueva-clave' \
+  > /opt/eduscout/deploy/logs/.htpasswd
+sudo /opt/eduscout/deploy/scripts/deploy.sh app   # recrea nginx con el archivo nuevo
+```
+
+Si `.htpasswd` no existe, Docker lo crearía como **directorio** y nginx no arrancaría; por eso
+`deploy.sh` lo genera (contraseña aleatoria, se imprime una sola vez en el journal) antes del
+`up -d`.
+
 **b) Conversión (base de datos).** `candidates.acquisition_source/medium/campaign/referrer`
 guarda el canal capturado en el navegador al momento del registro (`utm_*` o dominio de
 referencia, con ventana de 30 días y último toque con UTM). Se ve en el panel admin, pestaña

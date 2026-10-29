@@ -72,8 +72,42 @@ prepare_logs() {
     -exec chmod 664 {} + 2>/dev/null || true
 }
 
+# /reportes/ se sirve con Basic Auth desde logs/reportes. El archivo se monta en
+# nginx, así que tiene que existir antes del `up -d`: si falta, Docker crea un
+# DIRECTORIO con ese nombre y nginx no arranca.
+prepare_auth() {
+  [ "$TARGET" = "app" ] || return 0
+
+  local htpasswd="$DEPLOY_DIR/logs/.htpasswd"
+
+  if [ -d "$htpasswd" ]; then
+    rmdir "$htpasswd" 2>/dev/null || true
+  fi
+
+  if [ -s "$htpasswd" ]; then
+    chmod 644 "$htpasswd"
+    return 0
+  fi
+
+  local pass
+  pass="$(LC_ALL=C tr -dc 'A-Za-z2-9' < /dev/urandom | head -c 20)"
+  printf 'eduscout:%s\n' "$(openssl passwd -apr1 "$pass")" >"$htpasswd"
+  chmod 644 "$htpasswd"
+
+  cat <<EOF
+Aviso: no existía $htpasswd, se creó con credenciales nuevas.
+
+  usuario: eduscout
+  clave:   $pass
+
+Anótala: no se vuelve a mostrar. Para cambiarla:
+  htpasswd -nbB eduscout 'nueva-clave' >$htpasswd
+EOF
+}
+
 sync_repo
 prepare_logs
+prepare_auth
 
 cd "$DEPLOY_DIR"
 docker compose -f "$COMPOSE" pull

@@ -99,3 +99,5 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
   OJO: `logs/nginx` debe ser `root:ubuntu 775` — nginx corre con `cap_drop: ALL` y no puede
   crear el log en un directorio ajeno (`[emerg] open() ... Permission denied` en `nginx -s
   reopen`); `deploy.sh` (`prepare_logs`) lo deja así en cada corrida.
+  El reporte se ve en `https://eduscout.cl/reportes/` (Basic Auth, `logs/.htpasswd` no
+  versionado; el timer `eduscout-log-report` lo regenera a diario).

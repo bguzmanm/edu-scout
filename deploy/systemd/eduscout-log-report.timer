@@ -1,0 +1,11 @@
+[Unit]
+Description=Reporte diario de tráfico de EduScout
+
+[Timer]
+# 07:30 en Chile (la VM corre en UTC; systemd respeta la zona indicada).
+OnCalendar=*-*-* 07:30:00 America/Santiago
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target

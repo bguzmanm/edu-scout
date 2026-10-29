@@ -1,0 +1,16 @@
+[Unit]
+Description=Genera el reporte de tráfico de EduScout (goaccess)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Corre como ubuntu (está en el grupo docker): los reportes quedan legibles y
+# el script se puede correr a mano con el mismo usuario.
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/eduscout/deploy
+# El día 1 de cada mes también rota el access log, después de reportar.
+ExecStart=/bin/sh -c 'if [ "$(date +%%d)" = "01" ]; then exec ./scripts/log-report.sh --html --rotate; else exec ./scripts/log-report.sh --html; fi'
+Nice=10
+IOSchedulingClass=idle

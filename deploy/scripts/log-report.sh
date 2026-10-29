@@ -97,6 +97,10 @@ if [ "$generate_html" -eq 1 ] || [ ! -t 1 ]; then
   cp "$REPORT_DIR/reporte-$stamp.html" "$REPORT_DIR/ultimo.html"
   echo "Reporte HTML: $REPORT_DIR/reporte-$stamp.html"
   echo "Copia del último: $REPORT_DIR/ultimo.html"
+
+  # Cada reporte es autocontenido (~2 MB): basta con los últimos.
+  { ls -1t "$REPORT_DIR"/reporte-*.html 2>/dev/null || true; } |
+    tail -n +8 | xargs -r rm -f
 else
   docker run --rm -it \
     -v "$LOG_DIR:/logs:ro" \
@@ -138,4 +142,9 @@ EOF
   fi
 
   echo "Log archivado en $archive"
+
+  # Los archivos rotados no entran en el reporte; se conservan un año por si
+  # hay que revisar algo puntual.
+  find "$LOG_DIR" -maxdepth 1 -name 'access-*.log' -mtime +365 -delete \
+    2>/dev/null || true
 fi
