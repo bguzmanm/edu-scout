@@ -44,7 +44,7 @@ cp .env.example .env
 bun run docker:up          # PostgreSQL 17
 bun run db:generate        # Generar migraciones
 bun run db:migrate         # Aplicar migraciones
-bun run db:seed            # Sembrar 17 fuentes iniciales
+bun run db:seed            # Sembrar 18 fuentes iniciales
 bun run start:dev          # → http://localhost:3001
 
 # 3. Frontend (otra terminal)
@@ -77,6 +77,7 @@ EduScout scraping automáticamente las siguientes instituciones:
 | IP Chile | API REST | [laborum.cl](https://www.laborum.cl) |
 | Instituto Profesional Iplacex | API REST | [convocatoriasdocentes.iplacex.cl](https://convocatoriasdocentes.iplacex.cl/) |
 | Universidad de Las Américas | trabajando.cl | [udla.trabajando.cl](https://udla.trabajando.cl) |
+| Universidad Mayor | trabajando.cl | [umayor.trabajando.cl](https://umayor.trabajando.cl) |
 | UNIACC | hiringroom | [uniacc.hiringroom.com](https://uniacc.hiringroom.com/jobs) |
 | Universidad de Concepción | trabajando.cl | [udec.trabajando.cl](https://udec.trabajando.cl/trabajo-empleo/) |
 | U. Técnica Federico Santa María | HTML | [vra.usm.cl](https://vra.usm.cl/ofertas-laborales/) |
