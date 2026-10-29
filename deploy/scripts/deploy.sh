@@ -63,6 +63,13 @@ prepare_logs() {
     "$DEPLOY_DIR/logs" \
     "$DEPLOY_DIR/logs/nginx" \
     "$DEPLOY_DIR/logs/reportes"
+
+  # nginx deja el access.log a nombre del worker (uid 101) con modo 644, y el
+  # master —root sin CAP_DAC_OVERRIDE— ya no puede reabrirlo: cada reload
+  # registra un [emerg] y el que rota depende del worker. 664 lo deja escribible
+  # por el grupo root, que es el gid del master.
+  find "$DEPLOY_DIR/logs/nginx" -maxdepth 1 -type f -name '*.log' \
+    -exec chmod 664 {} + 2>/dev/null || true
 }
 
 sync_repo
