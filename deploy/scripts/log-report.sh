@@ -94,7 +94,10 @@ if [ "$generate_html" -eq 1 ] || [ ! -t 1 ]; then
     --html-prefs='{"theme":"bright","numQueries":10}' \
     -o "$target"
 
-  cp "$REPORT_DIR/reporte-$stamp.html" "$REPORT_DIR/ultimo.html"
+  # mv (no cp directo) para no depender del dueño del archivo anterior: el
+  # directorio es del usuario del repo, así que el reemplazo siempre funciona.
+  cp "$REPORT_DIR/reporte-$stamp.html" "$REPORT_DIR/.ultimo.html.tmp"
+  mv -f "$REPORT_DIR/.ultimo.html.tmp" "$REPORT_DIR/ultimo.html"
   echo "Reporte HTML: $REPORT_DIR/reporte-$stamp.html"
   echo "Copia del último: $REPORT_DIR/ultimo.html"
 
