@@ -36,6 +36,14 @@ sync_repo() {
 
   if repo_git fetch --quiet origin main 2>/dev/null; then
     repo_git reset --hard --quiet FETCH_HEAD
+    # El timer corre como root y git crea objetos suyos: si no se devuelven, un
+    # `git fetch` manual como el dueño del repo falla con "insufficient
+    # permission for adding an object".
+    if [ "$(id -u)" -eq 0 ]; then
+      local owner
+      owner="$(stat -c %U "$DEPLOY_DIR")"
+      [ "$owner" = "root" ] || chown -R "$owner:$owner" "$REPO_DIR/.git"
+    fi
     echo "Repositorio sincronizado: $(repo_git rev-parse --short HEAD)"
   else
     echo "Aviso: no se pudo sincronizar con origin; se despliega $(repo_git rev-parse --short HEAD)." >&2
