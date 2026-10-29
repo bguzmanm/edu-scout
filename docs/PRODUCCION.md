@@ -174,7 +174,12 @@ sudo /opt/eduscout/deploy/scripts/deploy.sh app   # recrea nginx con el archivo 
 
 Si `.htpasswd` no existe, Docker lo crearía como **directorio** y nginx no arrancaría; por eso
 `deploy.sh` lo genera (contraseña aleatoria, se imprime una sola vez en el journal) antes del
-`up -d`.
+`up -d`. El timer se instala una vez por VM:
+
+```bash
+sudo install -m 644 /opt/eduscout/deploy/systemd/eduscout-log-report.* /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now eduscout-log-report.timer
+```
 
 **b) Conversión (base de datos).** `candidates.acquisition_source/medium/campaign/referrer`
 guarda el canal capturado en el navegador al momento del registro (`utm_*` o dominio de
