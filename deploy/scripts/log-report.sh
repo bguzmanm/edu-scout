@@ -63,7 +63,17 @@ EOF
   exit 1
 fi
 
-mkdir -p "$REPORT_DIR"
+mkdir -p "$REPORT_DIR" 2>/dev/null || {
+  cat >&2 <<EOF
+No se pudo crear $REPORT_DIR
+
+Los directorios de deploy/logs pertenecen a root (Docker los crea así). Corre el
+script con sudo, o devuélvelos a tu usuario:
+
+  sudo chown -R "\$(id -un)" /opt/eduscout/deploy/logs
+EOF
+  exit 1
+}
 
 GOACCESS_ARGS=(
   /logs/access.log

@@ -69,6 +69,14 @@ Visitantes ──► eduscout.cl (nic.cl/Cloudflare, DNS only) ──► nginx (
   `bun run db:migrate` antes de `bun dist/src/main.js`.
 - **VPS**: `docker compose pull && up -d` vía **timer systemd** (cada ~5 min).
   - Se elige timer systemd sobre Watchtower para no montar `docker.sock` dentro de un contenedor.
+  - Antes del pull, `deploy.sh` sincroniza `/opt/eduscout` con `origin/main` (`git fetch` +
+    `reset --hard`): los dos VMs son checkouts del repo público desde 29/10/2026, así que
+    `nginx.conf`, los compose y los scripts llegan solos. `.env`, `.backup-gpg-passphrase` y
+    `terraform.tfstate` son no versionados y no se tocan.
+  - Después del `up -d`, `deploy.sh` recarga nginx (`nginx -s reload`): el archivo montado cambia
+    sin que Docker recree el contenedor. Si la config es inválida, nginx mantiene la anterior y
+    el service queda en `failed` (visible en `journalctl -u eduscout-deploy`).
+  - Los secrets se siguen escribiendo a mano en cada VM (`.env`), nunca por git.
 - **Migrations**: el entrypoint del contenedor backend ejecuta `db:migrate` (idempotente) antes de `start:prod`.
 - **Rollback**: apuntar `.env` del VPS a un tag anterior → `docker compose up -d`.
 - **GHCR público**: hecho manual en la UI de GitHub (los pasos con `GITHUB_TOKEN` no funcionan;
@@ -147,8 +155,8 @@ cd /opt/eduscout/deploy
 
 goaccess corre en un contenedor efímero (`allinurl/goaccess`), sin instalar nada en la VM. Usa
 `--ignore-crawlers`, que excluye el tráfico de Googlebot y compañía: las visitas del reporte son
-personas, no indexación. **Aplicar el cambio requiere recrear nginx** (`up -d nginx`); hasta
-entonces `/var/log/eduscout` no existe y el script avisa con esa instrucción.
+personas, no indexación. Los directorios de `logs/` los crea Docker como root; `deploy.sh` los
+devuelve al dueño del repo en cada corrida, así que el script se puede correr sin `sudo`.
 
 **b) Conversión (base de datos).** `candidates.acquisition_source/medium/campaign/referrer`
 guarda el canal capturado en el navegador al momento del registro (`utm_*` o dominio de
