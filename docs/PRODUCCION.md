@@ -161,7 +161,12 @@ directorio cuyo dueño sea root, y el grupo con escritura permite rotar sin `sud
 deja esos permisos en cada corrida; `logs/reportes` queda para el dueño del repo.
 
 **Verlo desde el navegador (incluido el celular).** `https://eduscout.cl/reportes/` sirve el
-`ultimo.html` con Basic Auth; nginx lo monta desde `logs/reportes` (ro). El timer
+`ultimo.html` con Basic Auth; nginx lo monta desde `logs/reportes` (ro). Como muchos clientes
+(navegadores embebidos de WhatsApp/Instagram, el panel de OpenCode) no saben mostrar el diálogo
+de Basic Auth, existe una segunda entrada con token en la ruta:
+`https://eduscout.cl/r/<token>/` (la misma vista, sin diálogo). Para esa ruta el token **es** la
+credencial y `access_log` está apagado ahí para que no quede escrito en el propio reporte; si se
+filtra, se cambia el `location` en `nginx.conf` y se despliega. El timer
 `eduscout-log-report.timer` regenera el reporte a diario a las 07:30 de Chile y rota el log el
 día 1 de cada mes. Credenciales en `deploy/logs/.htpasswd` (no versionado, `644` porque el worker
 de nginx corre como uid 101). Para cambiarlas, en la VM:
