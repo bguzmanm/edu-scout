@@ -155,8 +155,10 @@ cd /opt/eduscout/deploy
 
 goaccess corre en un contenedor efímero (`allinurl/goaccess`), sin instalar nada en la VM. Usa
 `--ignore-crawlers`, que excluye el tráfico de Googlebot y compañía: las visitas del reporte son
-personas, no indexación. Los directorios de `logs/` los crea Docker como root; `deploy.sh` los
-devuelve al dueño del repo en cada corrida, así que el script se puede correr sin `sudo`.
+personas, no indexación. `deploy/logs/nginx` debe ser `root:<tu usuario>` con `chmod 775`: nginx
+corre como root pero con `cap_drop: ALL` (sin `CAP_DAC_OVERRIDE`), así que solo escribe en un
+directorio cuyo dueño sea root, y el grupo con escritura permite rotar sin `sudo`. `deploy.sh`
+deja esos permisos en cada corrida; `logs/reportes` queda para el dueño del repo.
 
 **b) Conversión (base de datos).** `candidates.acquisition_source/medium/campaign/referrer`
 guarda el canal capturado en el navegador al momento del registro (`utm_*` o dominio de

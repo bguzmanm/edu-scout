@@ -42,19 +42,22 @@ sync_repo() {
   fi
 }
 
-# Docker crea los directorios del bind mount como root; se devuelven al dueño del
-# repo para poder generar reportes y rotar el access log sin sudo.
+# Docker crea los directorios del bind mount como root. nginx corre como root
+# pero con `cap_drop: ALL` (sin CAP_DAC_OVERRIDE), así que sólo puede escribir en
+# un directorio cuyo dueño sea root: si se le cambia el dueño, el `nginx -s
+# reopen` falla con "Permission denied". Por eso nginx queda para root:ubuntu
+# (grupo con escritura, para poder rotar sin sudo) y reportes para el dueño del
+# repo.
 prepare_logs() {
   [ "$TARGET" = "app" ] || return 0
 
   mkdir -p "$DEPLOY_DIR/logs/nginx" "$DEPLOY_DIR/logs/reportes"
   local owner
   owner="$(stat -c %U "$DEPLOY_DIR")"
+
   if [ "$(id -u)" -eq 0 ] && [ "$owner" != "root" ]; then
-    chown "$owner" \
-      "$DEPLOY_DIR/logs" \
-      "$DEPLOY_DIR/logs/nginx" \
-      "$DEPLOY_DIR/logs/reportes"
+    chown "root:$owner" "$DEPLOY_DIR/logs/nginx"
+    chown "$owner:$owner" "$DEPLOY_DIR/logs" "$DEPLOY_DIR/logs/reportes"
   fi
   chmod 775 \
     "$DEPLOY_DIR/logs" \

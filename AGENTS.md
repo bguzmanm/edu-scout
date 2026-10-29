@@ -96,3 +96,6 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
   registros vive en `candidates.acquisition_*` (migración `0018`) y se captura en el navegador
   (`eduscout-front/src/lib/attribution.ts`, ventana de 30 días). El CSP de nginx solo permite
   `script-src 'self'`, así que GA/Plausible cloud no funcionarían sin editarlo.
+  OJO: `logs/nginx` debe ser `root:ubuntu 775` — nginx corre con `cap_drop: ALL` y no puede
+  crear el log en un directorio ajeno (`[emerg] open() ... Permission denied` en `nginx -s
+  reopen`); `deploy.sh` (`prepare_logs`) lo deja así en cada corrida.

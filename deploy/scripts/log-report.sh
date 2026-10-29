@@ -110,5 +110,32 @@ if [ "$rotate" -eq 1 ]; then
   mv "$LOG_FILE" "$archive"
   # USR1: nginx reabre sus archivos de log y crea el access.log nuevo.
   docker compose -f "$BASE_DIR/docker-compose.app.yml" exec -T nginx nginx -s reopen
+
+  # nginx corre como root pero con `cap_drop: ALL`, así que no puede crear el
+  # archivo si el directorio pertenece a otro usuario. En ese caso `reopen` no
+  # falla de forma visible y nginx sigue escribiendo en el inode ya archivado:
+  # el sitio funciona, pero no hay access.log nuevo y la rotación se pierde.
+  for _ in 1 2 3 4 5; do
+    [ -e "$LOG_FILE" ] && break
+    sleep 1
+  done
+
+  if [ ! -e "$LOG_FILE" ]; then
+    cat >&2 <<EOF
+
+nginx no pudo crear $LOG_FILE después del reopen.
+
+El directorio debe pertenecer a root (nginx pierde CAP_DAC_OVERRIDE por el
+cap_drop del compose) y ser escribible por tu grupo, para poder rotar sin sudo:
+
+  sudo chown root:\$(id -un) "$LOG_DIR"
+  sudo chmod 775 "$LOG_DIR"
+  docker compose -f "$BASE_DIR/docker-compose.app.yml" exec -T nginx nginx -s reopen
+
+Mientras tanto nginx sigue escribiendo en $archive.
+EOF
+    exit 1
+  fi
+
   echo "Log archivado en $archive"
 fi
