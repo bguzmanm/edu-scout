@@ -73,6 +73,14 @@ Monorepo raíz con submódulos git independientes (pipelines y repos propios):
   La imagen se construye vía CI en cada push a `main`.
 - **`NEXT_PUBLIC_API_URL`**: horneada en el build del Dockerfile (`http://backend:3001`, red interna).
 - **Arranque prod backend**: `bun dist/src/main.js` (el bundle queda en `dist/src/`, no `dist/`).
+- **Fuentes del frontend**: los woff2 viven en `eduscout-front/src/app/fonts/` y se cargan con
+  `next/font/local`. No volver a `next/font/google`: descargaba las fuentes en cada build y el CI
+  fallaba de forma intermitente con `Module not found: @vercel/turbopack-next/internal/font/google/font`.
+- **Ofertas vencidas**: al final de cada scraping (`ScrapingService`) se ejecuta
+  `jobsRepository.deactivateExpired()`, que marca `is_active = false` cuando `deadline < now()`.
+  Esas ofertas salen de los listados, del sitemap y del JSON-LD `JobPosting`.
+- **Código postal**: `jobs.postal_code` (migración `0020`) se extrae de `ubicacion.codigoPostal` en
+  los adapters de `trabajando.cl` y Santo Tomás; alimenta el `PostalAddress` del JSON-LD.
 - **GHCR**: los paquetes (`eduscout-back`, `eduscout-front`) son públicos; el pull anónimo requiere
   intercambiar un bearer token (`https://ghcr.io/token?scope=repository:...:pull`).
 - **Oracle/Terraform**: shape A1 free = 4 OCPU/24 GB totales por tenant; regiones con un solo AD
